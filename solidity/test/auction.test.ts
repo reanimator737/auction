@@ -21,18 +21,27 @@ describe("Token contract", () => {
         expect(_owner).to.equal(contractOwner.address)
     })
 
+    async function getTimestamp(blockNumber: number): Promise<number> {
+        return (await ethers.provider.getBlock(blockNumber)).timestamp
+    }
+
     it('Create auction', async () => {
-        const startPrice = 10_000_000;
+        const startPrice = ethers.utils.parseEther('0.001');
         const discountRate = 10;
         const item = "Very good product";
-        const duration = 0;
-        await contract.connect(auctionCreator).createAuction(startPrice, discountRate, item, duration);
+        const duration = 60;
+        const tx = await contract.connect(auctionCreator).createAuction(startPrice, discountRate, item, duration);
+
+        if (!tx.blockNumber){
+            return new Error()
+        }
 
         const currentAuc = await contract.auction(0);
+        const time = await getTimestamp(tx.blockNumber)
         expect(currentAuc.item).to.equal(item)
         expect(currentAuc.seller).to.equal(auctionCreator.address)
         expect(currentAuc.stopped).to.equal(false)
-
+        expect(currentAuc.endsAt).to.equal(time + duration)
 
     })
 })
