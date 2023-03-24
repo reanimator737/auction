@@ -15,4 +15,24 @@ describe("Token contract", () => {
         contract = await AucEngine.deploy()
         await contract.deployed()
     })
+
+    it('Check owner', async () => {
+        const _owner = await contract.owner()
+        expect(_owner).to.equal(contractOwner.address)
+    })
+
+    it('Create auction', async () => {
+        const startPrice = 10_000_000;
+        const discountRate = 10;
+        const item = "Very good product";
+        const duration = 0;
+        await contract.connect(auctionCreator).createAuction(startPrice, discountRate, item, duration);
+
+        const currentAuc = await contract.auction(0);
+        expect(currentAuc.item).to.equal(item)
+        expect(currentAuc.seller).to.equal(auctionCreator.address)
+        expect(currentAuc.stopped).to.equal(false)
+
+
+    })
 })
